@@ -1,0 +1,14 @@
+namespace protocol;
+
+rpc_service Greeter {
+  SayHello(HelloRequest):HelloResponse(streaming: "none");
+  SayHelloAgain(HelloRequest):HelloResponse(streaming: "none");
+}
+
+table HelloRequest {
+  name:string;
+}
+
+table HelloResponse {
+  message:string;
+}
