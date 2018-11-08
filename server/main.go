@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"net"
 
@@ -18,9 +19,11 @@ const (
 type server struct{}
 
 // SayHello says hello
-func (s *server) SayHello(ctx context.Context, in *fb.HelloRequest) (*flatbuffers.Builder, error) {
+func (s *server) SayHello(ctx context.Context, req *fb.HelloRequest) (*flatbuffers.Builder, error) {
+	logPrefix := "server::SayHello"
+
 	b := flatbuffers.NewBuilder(0)
-	msg := b.CreateString("hello from flatbuf: " + string(in.Name()))
+	msg := b.CreateString(fmt.Sprintf("%s hello %s ", logPrefix, string(req.Name())))
 
 	fb.HelloResponseStart(b)
 	fb.HelloResponseAddMessage(b, msg)
@@ -29,16 +32,60 @@ func (s *server) SayHello(ctx context.Context, in *fb.HelloRequest) (*flatbuffer
 	return b, nil
 }
 
-// SayHelloAgain says hello again
-func (s *server) SayHelloAgain(ctx context.Context, in *fb.HelloRequest) (*flatbuffers.Builder, error) {
+// GetManyHellos receives many hellos
+func (s *server) GetManyHellos(req *fb.ManyHelloRequest, resp fb.Greeter_GetManyHellosServer) error {
+	logPrefix := "server::GetManyHellos"
+
 	b := flatbuffers.NewBuilder(0)
-	msg := b.CreateString("hello again from flatbuf: " + string(in.Name()))
+	msg := b.CreateString(fmt.Sprintf("%s hello %s", logPrefix, string(req.Name())))
 
 	fb.HelloResponseStart(b)
 	fb.HelloResponseAddMessage(b, msg)
 	b.Finish(fb.HelloResponseEnd(b))
 
-	return b, nil
+	for i := 0; i < int(req.NumGreetings()); i++ {
+		err := resp.Send(b)
+		if err != nil {
+			log.Printf("%s Failed to send msg: %v\n", logPrefix, err)
+			return err
+		}
+		log.Printf("%s Sent msg to client, id: %d\n", logPrefix, i)
+	}
+
+	return nil
+}
+
+// SayManyHellos says many hellos
+func (s *server) SayManyHellos(resp fb.Greeter_SayManyHellosServer) error {
+	logPrefix := "server::SayManyHellos"
+
+	var msgCount int
+
+	req, err := resp.Recv()
+	for err == nil {
+		msgCount++
+		log.Printf("%s received request payload: %s\n", logPrefix, string(req.Name()))
+		req, err = resp.Recv()
+	}
+
+	b := flatbuffers.NewBuilder(0)
+	msg := b.CreateString(fmt.Sprintf("%s received %d messages", logPrefix, msgCount))
+
+	fb.HelloResponseStart(b)
+	fb.HelloResponseAddMessage(b, msg)
+	b.Finish(fb.HelloResponseEnd(b))
+
+	err = resp.SendAndClose(b)
+	if err != nil {
+		log.Printf("%s SendAndClose err: %v", logPrefix, err)
+	}
+
+	return err
+}
+
+// ChatterManyHellos is handler for bidirectional communication
+func (s *server) ChatterManyHellos(resp fb.Greeter_ChatterManyHellosServer) error {
+	return nil
 }
 
 func main() {
