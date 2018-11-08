@@ -3,17 +3,17 @@
 go build -o streaming_server ./cmd/bin/streaming_server.go
 go build -o streaming_client ./cmd/bin/streaming_client.go
 
-kill -9 `ps aux | grep streaming_client | grep -v grep | awk '{print $2}'` &>/dev/null
-kill -9 `ps aux | grep streaming_server | grep -v grep | awk '{print $2}'` &>/dev/null
+kill -9 `ps aux | grep -w streaming_client | grep -v grep | awk '{print $2}'` &>/dev/null
+kill -9 `ps aux | grep -w streaming_server | grep -v grep | awk '{print $2}'` &>/dev/null
 
-nohup ./streaming_server 30000 0 4 1000 &>/dev/null &
+./streaming_server 30000 0 4 $1 &>/dev/null &
 echo "Spawned server on 30000"
 
-./streaming_server 30001 1 4 1000 &>/dev/null &
+./streaming_server 30001 1 4 $1 &>/dev/null &
 echo "Spawned server on 30001"
 
-./streaming_server 30002 2 4 1000 &>/dev/null &
+./streaming_server 30002 2 4 $1 &>/dev/null &
 echo "Spawned server on 30002"
 
-./streaming_server 30003 3 4 1000 &>/dev/null &
+./streaming_server 30003 3 4 $1 &>/dev/null &
 echo "Spawned server on 30003"

@@ -60,10 +60,21 @@ func createAndMaintainFeed() error {
 		return err
 	}
 
-	resp, err := stream.Recv()
+	ticker := time.NewTicker(time.Second)
+	defer ticker.Stop()
+
+	var counter, prevCounter uint64
+	_, err = stream.Recv()
 	for err == nil {
-		fmt.Printf("%s\n", string(resp.UUID()))
-		resp, err = stream.Recv()
+		select {
+		case <-ticker.C:
+			diff := counter - prevCounter
+			prevCounter = counter
+			fmt.Printf("\rOps/s: %d", diff)
+		default:
+			counter++
+		}
+		_, err = stream.Recv()
 	}
 
 	err = stream.CloseSend()
