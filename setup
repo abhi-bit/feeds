@@ -6,14 +6,11 @@ go build -o streaming_client ./cmd/bin/streaming_client.go
 kill -9 `ps aux | grep -w streaming_client | grep -v grep | awk '{print $2}'` &>/dev/null
 kill -9 `ps aux | grep -w streaming_server | grep -v grep | awk '{print $2}'` &>/dev/null
 
-./streaming_server 30000 0 4 $1 &>/dev/null &
-echo "Spawned server on 30000"
+sleepDuration=$1
+serverCount=$(($2-1))
 
-./streaming_server 30001 1 4 $1 &>/dev/null &
-echo "Spawned server on 30001"
-
-./streaming_server 30002 2 4 $1 &>/dev/null &
-echo "Spawned server on 30002"
-
-./streaming_server 30003 3 4 $1 &>/dev/null &
-echo "Spawned server on 30003"
+for i in `seq 0 $serverCount`
+do
+    ./streaming_server 3000$i $i $2 $sleepDuration &>/dev/null &
+    echo "Spawned server on 3000$i"
+done
