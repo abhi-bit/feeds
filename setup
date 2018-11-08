@@ -1,0 +1,13 @@
+#!/bin/bash
+
+go build -o streaming_server ./cmd/bin/streaming_server.go
+go build -o streaming_client ./cmd/bin/streaming_client.go
+
+kill -9 `ps aux | grep streaming_client | grep -v grep | awk '{print $2}'`
+kill -9 `ps aux | grep streaming_server | grep -v grep | awk '{print $2}'`
+
+echo "Spawning 4 streaming servers"
+./streaming_server 30000 0 4 1000 &>/dev/null &
+./streaming_server 30001 1 4 1000 &>/dev/null &
+./streaming_server 30002 2 4 1000 &>/dev/null &
+./streaming_server 30003 3 4 1000 &>/dev/null &

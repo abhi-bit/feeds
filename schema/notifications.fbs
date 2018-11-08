@@ -1,0 +1,14 @@
+namespace notifications;
+
+rpc_service UUIDService {
+    GetUUIDs(UserRequest):UUIDResponse(streaming:"bidi");
+    GetUUIDsInternal(UserRequest):UUIDResponse(streaming:"server");
+}
+
+table UserRequest{
+  ID:string;
+}
+
+table UUIDResponse {
+  UUID:string;
+}
