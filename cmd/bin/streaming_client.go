@@ -84,7 +84,7 @@ func main() {
 		case "exit":
 			os.Exit(0)
 
-		case "l":
+		case "listen_to_feed":
 			createAndMaintainFeed()
 		}
 	}
